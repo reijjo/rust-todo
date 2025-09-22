@@ -1,4 +1,4 @@
-import type { Todo } from "../../../utils/types";
+import type { NewTodo, Todo } from "../../../utils/types";
 
 export const getTodos = async (): Promise<Todo[]> => {
   const response = await fetch("http://localhost:3000/todos");
@@ -9,7 +9,7 @@ export const getTodos = async (): Promise<Todo[]> => {
   return response.json();
 };
 
-export const addTodo = async (todo: Todo) => {
+export const addTodo = async (todo: NewTodo) => {
   const response = await fetch("http://localhost:3000/todos", {
     method: "POST",
     headers: {

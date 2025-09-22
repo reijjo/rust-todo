@@ -1,5 +1,11 @@
+export type TodoID = number;
+export type NewTodo = {
+  title: string;
+  completed: boolean;
+};
+
 export type Todo = {
-  id?: number;
+  id: TodoID;
   title: string;
   completed: boolean;
 };

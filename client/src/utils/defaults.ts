@@ -1,5 +1,4 @@
-export const defaultTodo = {
-  id: 0,
+export const defaultNewTodo = {
   title: "",
   completed: false,
 };
