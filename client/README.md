@@ -1,69 +1,65 @@
-# React + TypeScript + Vite
+# Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## How to install different stuff
 
-Currently, two official plugins are available:
+### Vitest & React Testinglibrary
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+#### Install
 
-## Expanding the ESLint configuration
+`bun add -d vitest jsdom @testing-library/react @testing-library/jest-dom @vitest/coverage-v8` to install the package
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Create setup file for tests `src/tests/setup.ts`
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```ts
+import "@testing-library/jest-dom";
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- Update `vite.config.ts`
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```ts
+/// <reference types="vitest/config" />
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: ["./src/tests/setup.ts"],
   },
-])
+});
+```
+
+- Add scripts to `package.json`:
+
+```json
+{
+  ...
+  "scripts": {
+    ...
+    "test": "vitest",
+    "test:cover": "vitest run --coverage",
+    ...
+  },
+	...
+}
+```
+
+#### Usage
+
+Create `HomePage.spec.tsx` file next to the `HomePage.tsx` file:
+
+```tsx
+import { describe, it, expect } from "vitest";
+import { render } from "@testing-library/react";
+import HomePage from "./HomePage";
+
+describe("HomePage", () => {
+  it("renders HomePage", () => {
+    render(<HomePage />);
+
+    expect(/add a todo/i).toBeInTheDocument();
+  });
+});
 ```
