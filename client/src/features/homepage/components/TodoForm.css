@@ -1,0 +1,21 @@
+.todo-form {
+  display: flex;
+  gap: 1rem;
+  min-height: 2.5rem;
+  width: min(100%, 400px);
+}
+
+.todo-input {
+  flex-grow: 1;
+  border: none;
+  color: white;
+  padding: 0.5rem;
+}
+
+.todo-button {
+  padding: 0 1rem;
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
