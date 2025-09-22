@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:cover": "vitest run --coverage",
-    "clean": "rm -rf dist && rm -rf node_modules && rm bun.lock && bun install"
+    "clean": "rm -rf dist && rm -rf node_modules && rm -f bun.lock && bun install"
   },
   "dependencies": {
     "@vitest/coverage-v8": "^3.2.4",

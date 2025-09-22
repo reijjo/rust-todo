@@ -2,7 +2,7 @@
 
 ## How to install different stuff
 
-### Vitest & React Testinglibrary
+### Vitest & React Testing Library
 
 #### Install
 
@@ -68,4 +68,4 @@ describe("HomePage", () => {
 
 Run tests with `bun run test`
 
-- If you want to see the text coverage run `bun run test:cover`
+- If you want to see the test coverage run `bun run test:cover`
