@@ -46,7 +46,7 @@ export default defineConfig({
 }
 ```
 
-#### Usage
+#### Tests
 
 Create `HomePage.spec.tsx` file next to the `HomePage.tsx` file:
 
@@ -59,7 +59,13 @@ describe("HomePage", () => {
   it("renders HomePage", () => {
     render(<HomePage />);
 
-    expect(/add a todo/i).toBeInTheDocument();
+    expect(screen.getByText(/add a todo/i)).toBeInTheDocument();
   });
 });
 ```
+
+#### Usage
+
+Run tests with `bun run test`
+
+- If you want to see the text coverage run `bun run test:cover`
