@@ -1,7 +1,10 @@
-import type { NewTodo, Todo } from "../../../utils/types";
+import type { Todo } from "../../../utils/types";
+import { config } from "../../../utils/config";
+
+const { API_URL } = config;
 
 export const getTodos = async (): Promise<Todo[]> => {
-  const response = await fetch("http://localhost:3000/todos");
+  const response = await fetch(`${API_URL}/todos`);
   if (!response.ok) {
     console.log("get todos api error", response);
     throw new Error(response.statusText);
@@ -9,8 +12,8 @@ export const getTodos = async (): Promise<Todo[]> => {
   return response.json();
 };
 
-export const addTodo = async (todo: NewTodo) => {
-  const response = await fetch("http://localhost:3000/todos", {
+export const addTodo = async (todo: string): Promise<Todo> => {
+  const response = await fetch(`${API_URL}/todos`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
