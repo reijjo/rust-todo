@@ -72,15 +72,27 @@ async fn main() {
 	// Start serving HTTP requests
 	// `axum::serve` takes a listener and a Router
   // `.await` keeps it running
-	axum::serve(listener, app).await.unwrap();
+	axum::serve(listener, app)
+		.with_graceful_shutdown(shutdown_signal())	// Tell the server to wait for a shutdown signal before exiting
+		.await.unwrap();
 }
 
 // Minimal handler for GET "/" route
-// Returns a string literal (`&'static str`)
-// - `static` means it lives for the whole program lifetime
-// - Simple & fast for tiny examples
+// Returns a string literal (`&'static str`):
+// - `&str` = string slice (borrowed string)
+// - `'static` = this string literal is baked into the binary and exists for the entire program's lifetime
+// - Because of that, Axum doesn't have to allocate/copy anything → very efficient
 async fn root() -> &'static str {
 	"Rust server up and running!"
+}
+
+// This async function waits for a shutdown signal
+// - `tokio::signal::ctrl_c()` listens for CTRL+C (SIGINT) in the terminal
+// - `.await` suspends the task until the signal arrives
+// - When triggered, the function prints a message and returns
+async fn shutdown_signal() {
+  let _ = tokio::signal::ctrl_c().await;
+  println!("\nShutting down…\n");
 }
 
 ```
@@ -91,7 +103,7 @@ Create `src/config.rs` file:
 use std::env;
 
 // Config struct holds all your app configuration
-// like environtment host and port.
+// like environment host and port.
 #[derive(Debug)]
 pub struct Config {
 	pub app_env: String,	// 'development' or 'production'
@@ -113,10 +125,20 @@ impl Config {
 		// Read HOST from env, default to "127.0.0.1"
 		let host = env::var("HOST").unwrap_or("127.0.0.1".to_string());
 
-		// Read PORT from env, default to 3000
-    // parse() converts String -> u16
-    // unwrap() panics if not a valid number; fine for now
-		let port = env::var("PORT").unwrap_or("3000".to_string()).parse().unwrap();
+		// Try to read the PORT environment variable → Result<String, VarError>
+    // Convert Result into Option.
+    //   - Ok("3000") → Some("3000")
+		//   - Err(_)     → None
+		// If we got Some("3000"), try parsing it into a u16 number
+		// |s| is a closure (like a small inline function).
+		//   - If parsing succeeds (e.g., "3000" → 3000), we get Some(3000).
+		//   - If parsing fails (e.g., "abc"), we get None.
+		// If everything above failed (no PORT env var, or parsing failed),
+		// fall back to the default value: 3000.
+		let port = env::var("PORT")
+			.ok()
+			.and_then(|s| s.parse::<u16>().ok())
+			.unwrap_or(3000);
 
 		Config { app_env, host, port }
 	}

@@ -3,13 +3,17 @@ import { useState } from "react";
 import { addTodo } from "../api/todoApi";
 
 export const TodoForm = () => {
-  const [todo, setTodo] = useState("defaultNewTodo");
+  const [todo, setTodo] = useState("");
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const title = todo.trim();
+    if (!title) return;
+
     try {
-      const newTodo = await addTodo(todo);
+      const newTodo = await addTodo(title);
+      setTodo("");
       console.log("todo added", newTodo);
     } catch (err) {
       console.log("failed to add todo", err);
@@ -22,6 +26,7 @@ export const TodoForm = () => {
         className="todo-input"
         type="text"
         onChange={(e) => setTodo(e.target.value)}
+        required
       />
       <button className="todo-button" type="submit">
         Add

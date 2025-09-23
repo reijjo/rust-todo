@@ -1,7 +1,7 @@
 use std::env;
 
 // Config struct holds all your app configuration
-// like environtment host and port.
+// like environment host and port.
 #[derive(Debug)]
 pub struct Config {
 	pub app_env: String,	// 'development' or 'production'
@@ -23,10 +23,20 @@ impl Config {
 		// Read HOST from env, default to "127.0.0.1"
 		let host = env::var("HOST").unwrap_or("127.0.0.1".to_string());
 
-		// Read PORT from env, default to 3000
-    // parse() converts String -> u16
-    // unwrap() panics if not a valid number; fine for now
-		let port = env::var("PORT").unwrap_or("3000".to_string()).parse().unwrap();
+		// Try to read the PORT environment variable → Result<String, VarError>
+    // Convert Result into Option.
+    //   - Ok("3000") → Some("3000")
+		//   - Err(_)     → None
+		// If we got Some("3000"), try parsing it into a u16 number
+		// |s| is a closure (like a small inline function).
+		//   - If parsing succeeds (e.g., "3000" → 3000), we get Some(3000).
+		//   - If parsing fails (e.g., "abc"), we get None.
+		// If everything above failed (no PORT env var, or parsing failed),
+		// fall back to the default value: 3000.
+		let port = env::var("PORT")
+			.ok()
+			.and_then(|s| s.parse::<u16>().ok())
+			.unwrap_or(3000);
 
 		Config { app_env, host, port }
 	}

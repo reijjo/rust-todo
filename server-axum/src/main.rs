@@ -32,13 +32,25 @@ async fn main() {
 	// Start serving HTTP requests
 	// `axum::serve` takes a listener and a Router
   // `.await` keeps it running
-	axum::serve(listener, app).await.unwrap();
+	axum::serve(listener, app)
+		.with_graceful_shutdown(shutdown_signal())	// Tell the server to wait for a shutdown signal before exiting
+		.await.unwrap();
 }
 
 // Minimal handler for GET "/" route
-// Returns a string literal (`&'static str`)
-// - `static` means it lives for the whole program lifetime
-// - Simple & fast for tiny examples
+// Returns a string literal (`&'static str`):
+// - `&str` = string slice (borrowed string)
+// - `'static` = this string literal is baked into the binary and exists for the entire program's lifetime
+// - Because of that, Axum doesn't have to allocate/copy anything → very efficient
 async fn root() -> &'static str {
 	"Rust server up and running!"
+}
+
+// This async function waits for a shutdown signal
+// - `tokio::signal::ctrl_c()` listens for CTRL+C (SIGINT) in the terminal
+// - `.await` suspends the task until the signal arrives
+// - When triggered, the function prints a message and returns
+async fn shutdown_signal() {
+  let _ = tokio::signal::ctrl_c().await;
+  println!("\nShutting down…\n");
 }
