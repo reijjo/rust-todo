@@ -1,11 +1,9 @@
-import { useState } from "react";
 import "./TodoForm.css";
-import type { NewTodo } from "../../../utils/types";
-import { defaultNewTodo } from "../../../utils/defaults";
+import { useState } from "react";
 import { addTodo } from "../api/todoApi";
 
 export const TodoForm = () => {
-  const [todo, setTodo] = useState<NewTodo>(defaultNewTodo);
+  const [todo, setTodo] = useState("defaultNewTodo");
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +21,7 @@ export const TodoForm = () => {
       <input
         className="todo-input"
         type="text"
-        onChange={(e) => setTodo({ ...todo, title: e.target.value })}
+        onChange={(e) => setTodo(e.target.value)}
       />
       <button className="todo-button" type="submit">
         Add
