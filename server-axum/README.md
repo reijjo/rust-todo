@@ -154,7 +154,10 @@ impl Config {
 
 ### Request logger (like Morgan in Expressjs)
 
-Add the dependencies `cargo add tower-http --features trace` `cargo add tracing-subscriber http tracing`
+Add the dependencies:
+`cargo add tower-http --features trace`
+`cargo add tracing-subscriber --features "env-filter,fmt"`
+`cargo add http tracing`
 
 - Configure logging in `main.rs`
 

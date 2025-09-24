@@ -7,7 +7,7 @@ use axum::{
 use tokio::{
 	net::TcpListener
 };	// Async TCP listener
-use tower_http::trace::{TraceLayer};
+use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]	// Starts the Tokio async runtime
@@ -16,18 +16,18 @@ async fn main() {
 	let config = config::Config::from_env();
 
 	tracing_subscriber::registry()	// Pretty-print logs to stdout
-	.with(tracing_subscriber::fmt::layer()
-		.compact()
-		.with_ansi(true)
-		.with_target(false)
-	)	
-	.init();
+		.with(tracing_subscriber::fmt::layer()
+			.compact()
+			.with_ansi(true)
+			.with_target(false)
+		)	
+		.init();
 
 	// Create a router with a single GET "/" route
   // `root` is the handler function for this route
 	let app = Router::new()
 		.route("/", get(root))
-		.layer(TraceLayer::new_for_http()	); // Logs every request/response
+		.layer(TraceLayer::new_for_http()); // Logs every request/response
 
 	// Get address string like "127.0.0.1:3000"
 	let addr = config.address();
