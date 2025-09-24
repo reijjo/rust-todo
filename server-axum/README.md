@@ -152,4 +152,35 @@ impl Config {
 
 ```
 
+### Request logger (like Morgan in Expressjs)
+
+Add the dependencies `cargo add tower-http --features trace` `cargo add tracing-subscriber http tracing`
+
+- Configure logging in `main.rs`
+
+```rs
+...
+use tower_http::trace::TraceLayer;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+#[tokio::main]	// Starts the Tokio async runtime
+async fn main() {
+	// Load configuration from environment / .env
+	let config = config::Config::from_env();
+
+	tracing_subscriber::registry()	// Pretty-print logs to stdout
+	.with(tracing_subscriber::fmt::layer()
+		.compact()
+		.with_ansi(true)
+		.with_target(false)
+	)
+	.init();
+
+	let app = Router::new()
+		.route("/", get(root))
+		.layer(TraceLayer::new_for_http()); // Logs every request/response
+	...
+}
+```
+
 ## ACTIX WEB
