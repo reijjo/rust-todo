@@ -16,7 +16,7 @@ export const TodoList = () => {
       }
     };
     getTodoList();
-  }, [todoList]);
+  }, []);
 
   return (
     <ul className="todo-list">
