@@ -8,10 +8,13 @@ export const TodoForm = () => {
   const queryClient = useQueryClient();
 
   const createTodo = useMutation({
-    mutationFn: (todo: string) => addTodo(todo),
+    mutationFn: addTodo,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["todos"] });
       setTodo("");
+    },
+    onError: (err) => {
+      console.error("Failed to add todo:", err);
     },
   });
 
@@ -31,14 +34,17 @@ export const TodoForm = () => {
         type="text"
         value={todo}
         onChange={(e) => setTodo(e.target.value)}
+        placeholder="Add something to do"
         required
       />
       <button
         className="todo-button"
         type="submit"
         disabled={createTodo.isPending}
+        aria-busy={createTodo.isPending}
+        aria-live="polite"
       >
-        {!createTodo.isPending ? "Add" : "Adding..."}
+        {createTodo.isPending ? "Adding..." : "Add"}
       </button>
     </form>
   );

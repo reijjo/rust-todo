@@ -13,7 +13,6 @@ export const TodoList = () => {
 
   return (
     <ul className="todo-list">
-      <li className="todo-item">Example TODOO</li>
       {todoList?.length > 0
         ? todoList?.map((todo) => (
             <li className="todo-item" key={todo.id}>
