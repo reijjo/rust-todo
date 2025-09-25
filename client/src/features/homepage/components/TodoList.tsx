@@ -18,7 +18,7 @@ export const TodoList = () => {
   return (
     <ul className="todo-list">
       {todoList?.length > 0
-        ? todoList?.map((todo) => <TodoItem todo={todo} />)
+        ? todoList?.map((todo) => <TodoItem todo={todo} key={todo.id} />)
         : "No todos"}
     </ul>
   );

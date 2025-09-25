@@ -5,9 +5,5 @@ type TodoItemProps = {
 };
 
 export const TodoItem = ({ todo }: TodoItemProps) => {
-  return (
-    <li className="todo-item" key={todo.id}>
-      {todo.title}
-    </li>
-  );
+  return <li className="todo-item">{todo.title}</li>;
 };

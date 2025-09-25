@@ -7,7 +7,6 @@ const HomePage = () => {
     <div className="wrapper homepage">
       <h1>Add a todo</h1>
       <TodoForm />
-
       <TodoList />
     </div>
   );
