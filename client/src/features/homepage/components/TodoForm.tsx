@@ -18,7 +18,7 @@ export const TodoForm = () => {
     },
   });
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     const title = todo.trim();
