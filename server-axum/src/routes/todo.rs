@@ -51,6 +51,5 @@ pub async fn add_todo(
 		done: new_todo.done,
 	};
 
-	println!("INSERT TO DB {:?}", insert_result.inserted_id);
 	Ok(Json(created_todo))
 }

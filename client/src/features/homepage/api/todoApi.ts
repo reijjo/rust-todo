@@ -12,7 +12,6 @@ export const getTodos = async (): Promise<Todo[]> => {
   }
 
   const todos: TodoResponse[] = await response.json();
-  console.log("todos", todos);
   return todos.map(parseTodoResponse);
 };
 
