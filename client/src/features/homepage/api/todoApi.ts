@@ -1,5 +1,6 @@
-import type { Todo } from "../../../utils/types";
+import type { Todo, TodoResponse } from "../../../utils/types";
 import { config } from "../../../utils/config";
+import { parseTodoResponse } from "../../../utils/helperFunctions/parsers";
 
 const { API_URL } = config;
 
@@ -9,7 +10,10 @@ export const getTodos = async (): Promise<Todo[]> => {
     console.log("get todos api error", response);
     throw new Error(response.statusText);
   }
-  return response.json();
+
+  const todos: TodoResponse[] = await response.json();
+  console.log("todos", todos);
+  return todos.map(parseTodoResponse);
 };
 
 export const addTodo = async (todo: string): Promise<Todo> => {
