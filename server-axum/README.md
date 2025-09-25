@@ -40,22 +40,15 @@ Modify `src/main.rs` file:
 ```rs
 mod config;	// include the config module
 
-use axum::{
-	routing::{get},
-	Router
-};	// Axum web framework
-use tokio::{
-	net::TcpListener
-};	// Async TCP listener
+use tokio::{net::TcpListener};	// Async TCP listener
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]	// Starts the Tokio async runtime
 async fn main() {
 	// Load configuration from environment / .env
 	let config = config::Config::from_env();
 
-	// Create a router with a single GET "/" route
-  // `root` is the handler function for this route
-  let app = Router::new().route("/", get(root));
+	let app = app::create_app(&config).await;
 
 	// Get address string like "127.0.0.1:3000"
 	let addr = config.address();
@@ -74,16 +67,7 @@ async fn main() {
   // `.await` keeps it running
 	axum::serve(listener, app)
 		.with_graceful_shutdown(shutdown_signal())	// Tell the server to wait for a shutdown signal before exiting
-		.await.unwrap();
-}
-
-// Minimal handler for GET "/" route
-// Returns a string literal (`&'static str`):
-// - `&str` = string slice (borrowed string)
-// - `'static` = this string literal is baked into the binary and exists for the entire program's lifetime
-// - Because of that, Axum doesn't have to allocate/copy anything → very efficient
-async fn root() -> &'static str {
-	"Rust server up and running!"
+		.await.unwrap()
 }
 
 // This async function waits for a shutdown signal
@@ -109,6 +93,7 @@ pub struct Config {
 	pub app_env: String,	// 'development' or 'production'
 	pub host: String,			// IP or hostname to bind to
 	pub port: u16,				// port number
+	pub mongodb_uri: String
 }
 
 impl Config {
@@ -140,7 +125,10 @@ impl Config {
 			.and_then(|s| s.parse::<u16>().ok())
 			.unwrap_or(3000);
 
-		Config { app_env, host, port }
+		let mongodb_uri = env::var("MONGODB")
+			.expect("MONGODB_URI must be set in environment or .env");
+
+		Config { app_env, host, port, mongodb_uri }
 	}
 
 	// Helper to create a full "host:port" string for binding
@@ -163,7 +151,6 @@ Add the dependencies:
 
 ```rs
 ...
-use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]	// Starts the Tokio async runtime
@@ -172,18 +159,167 @@ async fn main() {
 	let config = config::Config::from_env();
 
 	tracing_subscriber::registry()	// Pretty-print logs to stdout
-	.with(tracing_subscriber::fmt::layer()
-		.compact()
-		.with_ansi(true)
-		.with_target(false)
-	)
-	.init();
-
-	let app = Router::new()
-		.route("/", get(root))
-		.layer(TraceLayer::new_for_http()); // Logs every request/response
+		.with(tracing_subscriber::fmt::layer()
+			.with_level(true)
+			.with_target(false)
+			.with_ansi(true)
+			.compact()
+		)
+		.init();
 	...
 }
 ```
+
+### Mongo DB
+
+- Install dependencies
+
+  - `cargo add mongodb`, the Rust driver crate
+  - `cargo add serde`, the serialization crate
+  - `cargo add futures`, the asynchronous runtime crate that provides core abstractions
+
+- Create free cluster in MongoDB Atlas
+
+  - Get the connection string for the database (Connect button in your cluster page)
+  - Add that string to `.env` file:
+
+  ```.env
+  MONGODB=mongodb+srv://<db_username>:<db_password>@cluster0.z1acviy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+
+  ```
+
+  - Update the password to that string
+
+### app.rs
+
+Create `src/app.rs` file
+
+```rs
+
+use axum::{routing::{get}, Router};
+use mongodb::{Client, Collection};
+use tower_http::{cors::{Any, CorsLayer}, trace::TraceLayer};
+
+use crate::models::todo::Todo;
+use crate::routes;
+
+pub async fn create_app(config: &crate::config::Config) -> Router {
+	let client = Client::with_uri_str(&config.mongodb_uri)
+		.await
+		.expect("Database connection failed.");
+
+	let collection: Collection<Todo> = client
+		.database("rust-todo")
+		.collection("todos");
+
+	let cors = CorsLayer::new()
+		.allow_origin(Any)
+		.allow_methods(Any);
+
+	Router::new()
+		.route("/", get(routes::root))
+		.nest("/todos", routes::todo::todo_routes(collection))
+		.layer(TraceLayer::new_for_http())
+		.layer(cors)
+}
+
+```
+
+Make sure that you have all the necessary dependies installed
+
+### Database model
+
+Create `src/models/todo.rs` and `src/models.mod.rs` files
+
+- `todo.rs`:
+
+```rs
+use serde::{Deserialize, Serialize};
+use bson::oid:ObjectId;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Todo {
+	#[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
+	pub id: Option<ObjectId>,
+	pub title: String,
+	pub done: bool
+}
+
+```
+
+- `mod.rs` exports eveything from the routes folder
+
+```rs
+pub mod todo;
+```
+
+And remember to add in the top of the `main.rs` file:
+
+```rs
+mod models;
+mod app;
+mod routes;
+```
+
+### Todo route
+
+Create files `todo.rs` and `mod.rs` in `src/routes` folder
+
+- `todo.rs`:
+
+```rs
+use axum::{routing::get, extract::State, Json, Router, http::StatusCode};
+use mongodb::{Collection, bson::doc};
+use futures::TryStreamExt;
+
+use crate::models::todo::Todo;
+
+// uses every route from from this file
+pub fn todo_routes(collection: Collection<Todo>) -> Router {
+	Router::new()
+		.route("/", get(get_todos))
+		.with_state(collection)
+}
+
+// GET all todos
+// /todos
+pub async fn get_todos(
+	State(db): State<Collection<Todo>>,
+) -> Result<Json<Vec<Todo>>, (StatusCode, String)> {
+	let cursor = db
+		.find(doc! {})// Empty doc means find all
+		.await
+		.map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to fetch todos: {err}")))?;
+
+	let todos: Vec<Todo> = cursor
+		.try_collect()// Collect all tems from the async stream
+		.await
+		.map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to collect todos: {err}")))?;
+
+	Ok(Json(todos))
+}
+```
+
+- `mod.rs`:
+
+```rs
+pub mod todo;
+
+// use axum::response::IntoResponse;
+
+// Minimal handler for GET "/" route
+// Returns a string literal (`&'static str`):
+// - `&str` = string slice (borrowed string)
+// - `'static` = this string literal is baked into the binary and exists for the entire program's lifetime
+// - Because of that, Axum doesn't have to allocate/copy anything → very efficient
+pub async fn root() -> &'static str {
+	"Rust server up and running!"
+}
+
+```
+
+### Checking that everything works
+
+Go to <http://localhost:3000/todos> and you should see an empty array there
 
 ## ACTIX WEB

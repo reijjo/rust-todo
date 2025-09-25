@@ -1,13 +1,10 @@
 mod config;	// include the config module
+mod models;
+mod app;
+mod routes;
 
-use axum::{
-	routing::{get},
-	Router
-};	// Axum web framework
-use tokio::{
-	net::TcpListener
-};	// Async TCP listener
-use tower_http::trace::TraceLayer;
+
+use tokio::{net::TcpListener};	// Async TCP listener
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]	// Starts the Tokio async runtime
@@ -17,17 +14,14 @@ async fn main() {
 
 	tracing_subscriber::registry()	// Pretty-print logs to stdout
 		.with(tracing_subscriber::fmt::layer()
-			.compact()
-			.with_ansi(true)
+			.with_level(true)
 			.with_target(false)
+			.with_ansi(true)
+			.compact()
 		)	
 		.init();
 
-	// Create a router with a single GET "/" route
-  // `root` is the handler function for this route
-	let app = Router::new()
-		.route("/", get(root))
-		.layer(TraceLayer::new_for_http()); // Logs every request/response
+	let app = app::create_app(&config).await;
 
 	// Get address string like "127.0.0.1:3000"
 	let addr = config.address();
@@ -46,16 +40,7 @@ async fn main() {
   // `.await` keeps it running
 	axum::serve(listener, app)
 		.with_graceful_shutdown(shutdown_signal())	// Tell the server to wait for a shutdown signal before exiting
-		.await.unwrap();
-}
-
-// Minimal handler for GET "/" route
-// Returns a string literal (`&'static str`):
-// - `&str` = string slice (borrowed string)
-// - `'static` = this string literal is baked into the binary and exists for the entire program's lifetime
-// - Because of that, Axum doesn't have to allocate/copy anything → very efficient
-async fn root() -> &'static str {
-	"Rust server up and running!"
+		.await.unwrap()
 }
 
 // This async function waits for a shutdown signal

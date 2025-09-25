@@ -7,6 +7,7 @@ pub struct Config {
 	pub app_env: String,	// 'development' or 'production'
 	pub host: String,			// IP or hostname to bind to
 	pub port: u16,				// port number
+	pub mongodb_uri: String
 }
 
 impl Config {
@@ -38,7 +39,10 @@ impl Config {
 			.and_then(|s| s.parse::<u16>().ok())
 			.unwrap_or(3000);
 
-		Config { app_env, host, port }
+		let mongodb_uri = env::var("MONGODB_URI")
+			.expect("MONGODB_URI must be set in environment or .env");
+
+		Config { app_env, host, port, mongodb_uri }
 	}
 
 	// Helper to create a full "host:port" string for binding
