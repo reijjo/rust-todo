@@ -25,6 +25,7 @@ export const TodoForm = () => {
       <input
         className="todo-input"
         type="text"
+        value={todo}
         onChange={(e) => setTodo(e.target.value)}
         required
       />

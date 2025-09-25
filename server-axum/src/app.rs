@@ -17,7 +17,8 @@ pub async fn create_app(config: &crate::config::Config) -> Router {
 
 	let cors = CorsLayer::new()
 		.allow_origin(Any)
-		.allow_methods(Any);
+		.allow_methods(Any)
+		.allow_headers(Any);
 
 	Router::new()
 		.route("/", get(routes::root))

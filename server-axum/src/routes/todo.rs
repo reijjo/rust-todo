@@ -1,4 +1,4 @@
-use axum::{routing::get, extract::State, Json, Router, http::StatusCode};
+use axum::{routing::{get, post}, extract::State, Json, Router, http::StatusCode};
 use mongodb::{Collection, bson::doc};
 use futures::TryStreamExt;
 
@@ -8,6 +8,7 @@ use crate::models::todo::Todo;
 pub fn todo_routes(collection: Collection<Todo>) -> Router {
 	Router::new()
 		.route("/", get(get_todos))
+		.route("/", post(add_todo))
 		.with_state(collection)
 }
 
@@ -27,4 +28,28 @@ pub async fn get_todos(
 		.map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to collect todos: {err}")))?;
 
 	Ok(Json(todos))
+}
+
+pub async fn add_todo(
+	State(db): State<Collection<Todo>>,
+	Json(title): Json<String>,
+) -> Result<Json<Todo>, (StatusCode, String)> {
+	let new_todo = Todo {
+		id: None,
+		title: title,
+		done: false
+	};
+
+	let insert_result = db
+		.insert_one(&new_todo)
+		.await
+		.map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to insert todo: {err}")))?;
+
+	let created_todo = Todo {
+		id: Some(insert_result.inserted_id.as_object_id().unwrap()), // MongoDB generated ID
+		title: new_todo.title,
+		done: new_todo.done,
+	};
+
+	Ok(Json(created_todo))
 }
