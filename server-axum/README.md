@@ -318,6 +318,46 @@ pub async fn root() -> &'static str {
 
 ```
 
+Add create todo function in `src/routes/todo.rs`
+
+```rs
+...
+
+pub fn todo_routes(collection: Collection<Todo>) -> Router {
+	Router::new()
+		.route("/", get(get_todos))
+		.route("/", post(add_todo))	// add this
+		.with_state(collection)
+}
+
+...
+// POST add todo
+// /todos
+pub async fn add_todo(
+	State(db): State<Collection<Todo>>,
+	Json(title): Json<String>,
+) -> Result<Json<Todo>, (StatusCode, String)> {
+	let new_todo = Todo {
+		id: None,
+		title: title,
+		done: false
+	};
+
+	let insert_result = db
+		.insert_one(&new_todo)
+		.await
+		.map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to insert todo: {err}")))?;
+
+	let created_todo = Todo {
+		id: Some(insert_result.inserted_id.as_object_id().unwrap()), // MongoDB generated ID
+		title: new_todo.title,
+		done: new_todo.done,
+	};
+
+	Ok(Json(created_todo))
+}
+```
+
 ### Checking that everything works
 
 Go to <http://localhost:3000/todos> and you should see an empty array there
