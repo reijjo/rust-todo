@@ -1,29 +1,20 @@
-import { useEffect, useState } from "react";
 import { getTodos } from "../api/todoApi";
-import type { Todo } from "../../../utils/types";
+import { useQuery } from "@tanstack/react-query";
 
 export const TodoList = () => {
-  const [todoList, setTodoList] = useState<Todo[]>([]);
+  const {
+    data: todoList = [],
+    isError,
+    error,
+  } = useQuery({ queryKey: ["todos"], queryFn: getTodos });
 
-  useEffect(() => {
-    const getTodoList = async () => {
-      try {
-        const getList = await getTodos();
-        setTodoList(getList);
-      } catch (err) {
-        console.log("failed to get todo list", err);
-      }
-    };
-    getTodoList();
-  }, []);
-
-  console.log("todo list", todoList);
+  console.log("todos", todoList);
+  console.log("IS ERROR", isError, error);
 
   return (
     <ul className="todo-list">
-      <li className="todo-item">Example TODOO</li>
-      {todoList.length > 0
-        ? todoList.map((todo) => (
+      {todoList?.length > 0
+        ? todoList?.map((todo) => (
             <li className="todo-item" key={todo.id}>
               {todo.title}
             </li>

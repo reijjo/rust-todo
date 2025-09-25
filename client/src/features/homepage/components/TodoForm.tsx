@@ -1,23 +1,30 @@
 import "./TodoForm.css";
 import { useState } from "react";
 import { addTodo } from "../api/todoApi";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export const TodoForm = () => {
   const [todo, setTodo] = useState("");
+  const queryClient = useQueryClient();
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const createTodo = useMutation({
+    mutationFn: addTodo,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["todos"] });
+      setTodo("");
+    },
+    onError: (err) => {
+      console.error("Failed to add todo:", err);
+    },
+  });
+
+  const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     const title = todo.trim();
     if (!title) return;
 
-    try {
-      const newTodo = await addTodo(title);
-      setTodo("");
-      console.log("todo added", newTodo);
-    } catch (err) {
-      console.log("failed to add todo", err);
-    }
+    createTodo.mutate(title);
   };
 
   return (
@@ -27,10 +34,17 @@ export const TodoForm = () => {
         type="text"
         value={todo}
         onChange={(e) => setTodo(e.target.value)}
+        placeholder="Add something to do"
         required
       />
-      <button className="todo-button" type="submit">
-        Add
+      <button
+        className="todo-button"
+        type="submit"
+        disabled={createTodo.isPending}
+        aria-busy={createTodo.isPending}
+        aria-live="polite"
+      >
+        {createTodo.isPending ? "Adding..." : "Add"}
       </button>
     </form>
   );
