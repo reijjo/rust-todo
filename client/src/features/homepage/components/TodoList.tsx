@@ -10,7 +10,7 @@ export const TodoList = () => {
       try {
         const getList = await getTodos();
         setTodoList(getList);
-        console.log("todo list", todoList);
+        console.log("todo list", getList);
       } catch (err) {
         console.log("failed to get todo list", err);
       }

@@ -39,7 +39,7 @@ impl Config {
 			.and_then(|s| s.parse::<u16>().ok())
 			.unwrap_or(3000);
 
-		let mongodb_uri = env::var("MONGODB")
+		let mongodb_uri = env::var("MONGODB_URI")
 			.expect("MONGODB_URI must be set in environment or .env");
 
 		Config { app_env, host, port, mongodb_uri }
