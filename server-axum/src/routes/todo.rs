@@ -30,6 +30,8 @@ pub async fn get_todos(
 	Ok(Json(todos))
 }
 
+// POST add todo
+// /todos
 pub async fn add_todo(
 	State(db): State<Collection<Todo>>,
 	Json(title): Json<String>,
