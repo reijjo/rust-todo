@@ -1,5 +1,8 @@
 import { getTodos } from "../api/todoApi";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import {
+  QueryErrorResetBoundary,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { TodoItem } from "./TodoItem";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -26,10 +29,14 @@ const Todos = () => {
 
 export const TodoList = () => {
   return (
-    <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <Suspense fallback={<div>Loading todolist...</div>}>
-        <Todos />
-      </Suspense>
-    </ErrorBoundary>
+    <QueryErrorResetBoundary>
+      {({ reset }) => (
+        <ErrorBoundary FallbackComponent={ErrorFallback} onReset={reset}>
+          <Suspense fallback={<div>Loading todolist...</div>}>
+            <Todos />
+          </Suspense>
+        </ErrorBoundary>
+      )}
+    </QueryErrorResetBoundary>
   );
 };

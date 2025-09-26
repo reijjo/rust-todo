@@ -5,11 +5,11 @@ import { parseTodoResponse } from "../../../utils/helperFunctions/parsers";
 const { API_URL } = config;
 
 export const getTodos = async (): Promise<Todo[]> => {
-  await new Promise((resolve) => setTimeout(resolve, 4000));
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   const response = await fetch(`${API_URL}/todos`);
+  console.log("get todos api error", response);
   if (!response.ok) {
-    console.log("get todos api error", response);
     throw new Error(response.statusText);
   }
 
