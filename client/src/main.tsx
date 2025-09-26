@@ -3,7 +3,13 @@ import "./index.css";
 import App from "./App.tsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { lazy, Suspense } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+  QueryErrorResetBoundary,
+} from "@tanstack/react-query";
+import { ErrorBoundary } from "react-error-boundary";
+import { GlobalErrorFallback } from "./components/shared/fallback/GlobalErrorFallback.tsx";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const queryClient = new QueryClient({
@@ -30,8 +36,20 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
-    <Suspense fallback={<div>Loading...</div>}>
-      <RouterProvider router={router} />
-    </Suspense>
+    <QueryErrorResetBoundary>
+      {({ reset }) => (
+        <ErrorBoundary
+          FallbackComponent={GlobalErrorFallback}
+          onReset={reset}
+          onError={(error, info) => {
+            console.error("App ErrorBoundary", { error, info });
+          }}
+        >
+          <Suspense fallback={<div>Loading...</div>}>
+            <RouterProvider router={router} />
+          </Suspense>
+        </ErrorBoundary>
+      )}
+    </QueryErrorResetBoundary>
   </QueryClientProvider>
 );

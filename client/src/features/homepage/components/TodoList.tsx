@@ -1,19 +1,22 @@
 import { getTodos } from "../api/todoApi";
-import { useQuery } from "@tanstack/react-query";
+import {
+  QueryErrorResetBoundary,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { TodoItem } from "./TodoItem";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import { ErrorFallback } from "../../../components/shared/fallback/ErrorFallback";
 
-export const TodoList = () => {
+const Todos = () => {
   const {
     data: todoList = [],
     isError,
     error,
-    isLoading,
-  } = useQuery({ queryKey: ["todos"], queryFn: getTodos });
+  } = useSuspenseQuery({ queryKey: ["todos"], queryFn: getTodos });
 
   console.log("todos", todoList);
   console.log("IS ERROR", isError, error);
-
-  if (isLoading) return <div>Loading todos...</div>;
 
   return (
     <ul className="todo-list">
@@ -21,5 +24,19 @@ export const TodoList = () => {
         ? todoList?.map((todo) => <TodoItem todo={todo} key={todo.id} />)
         : "No todos"}
     </ul>
+  );
+};
+
+export const TodoList = () => {
+  return (
+    <QueryErrorResetBoundary>
+      {({ reset }) => (
+        <ErrorBoundary FallbackComponent={ErrorFallback} onReset={reset}>
+          <Suspense fallback={<div>Loading todolist...</div>}>
+            <Todos />
+          </Suspense>
+        </ErrorBoundary>
+      )}
+    </QueryErrorResetBoundary>
   );
 };
