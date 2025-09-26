@@ -16,12 +16,12 @@ export const TodoItem = ({ todo }: TodoItemProps) => {
           className="todo-check"
         />
         <p className="todo-title">{todo.title}</p>
-        {todo.done && (
-          <button type="button" className="todo-delete">
-            Delete
-          </button>
-        )}
       </label>
+      {todo.done && (
+        <button type="button" className="todo-delete">
+          Delete
+        </button>
+      )}
     </li>
   );
 };
