@@ -1,8 +1,7 @@
-.homepage {
-  padding: 5rem 0;
+.todo-list {
+  width: max(100%, 600px);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 1rem;
 }
