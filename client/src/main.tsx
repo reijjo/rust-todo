@@ -38,7 +38,13 @@ createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
     <QueryErrorResetBoundary>
       {({ reset }) => (
-        <ErrorBoundary FallbackComponent={GlobalErrorFallback} onReset={reset}>
+        <ErrorBoundary
+          FallbackComponent={GlobalErrorFallback}
+          onReset={reset}
+          onError={(error, info) => {
+            console.error("App ErrorBoundary", { error, info });
+          }}
+        >
           <Suspense fallback={<div>Loading...</div>}>
             <RouterProvider router={router} />
           </Suspense>

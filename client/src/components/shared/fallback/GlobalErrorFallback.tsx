@@ -5,10 +5,12 @@ export const GlobalErrorFallback = ({
   resetErrorBoundary,
 }: FallbackProps) => (
   <div style={{ display: "grid", placeContent: "center", height: "100vh" }}>
-    <div>
+    <div role="alert">
       <h1>Something went wrong</h1>
       <pre>{error.message}</pre>
-      <button onClick={resetErrorBoundary}>Reload app</button>
+      <button type="button" onClick={resetErrorBoundary}>
+        Reload app
+      </button>
     </div>
   </div>
 );

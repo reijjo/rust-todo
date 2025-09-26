@@ -8,8 +8,12 @@ export const getTodos = async (): Promise<Todo[]> => {
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
   const response = await fetch(`${API_URL}/todos`);
-  console.log("get todos api error", response);
   if (!response.ok) {
+    console.log("get todos api error", {
+      status: response.status,
+      statusText: response.statusText,
+      url: response.url,
+    });
     throw new Error(response.statusText);
   }
 
