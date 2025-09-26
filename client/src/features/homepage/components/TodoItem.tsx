@@ -1,3 +1,4 @@
+import "./TodoItem.css";
 import type { Todo } from "../../../utils/types";
 
 type TodoItemProps = {
@@ -5,5 +6,22 @@ type TodoItemProps = {
 };
 
 export const TodoItem = ({ todo }: TodoItemProps) => {
-  return <li className="todo-item">{todo.title}</li>;
+  return (
+    <li className="todo-item">
+      <label htmlFor={todo.id} className="todo-input">
+        <input
+          type="checkbox"
+          name="todo-input"
+          id={todo.id}
+          className="todo-check"
+        />
+        <p className="todo-title">{todo.title}</p>
+      </label>
+      {todo.done && (
+        <button type="button" className="todo-delete">
+          Delete
+        </button>
+      )}
+    </li>
+  );
 };
