@@ -36,3 +36,37 @@ export const addTodo = async (todo: string): Promise<Todo> => {
   }
   return response.json();
 };
+
+export const updateTodo = async ({
+  id,
+  done,
+}: Partial<Todo>): Promise<Todo> => {
+  const response = await fetch(`${API_URL}/todos/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(done),
+  });
+
+  if (!response.ok) {
+    console.log("Update todo api error", response);
+    throw new Error(response.statusText);
+  }
+  return response.json();
+};
+
+export const deleteTodo = async (id: string): Promise<Todo> => {
+  const response = await fetch(`${API_URL}/todos/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    console.log("delete todo api error", response);
+    throw new Error(response.statusText);
+  }
+  return response.json();
+};
