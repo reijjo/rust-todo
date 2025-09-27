@@ -8,3 +8,9 @@ pub struct Todo {
 	pub title: String,
 	pub done: bool
 }
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateTodo {
+	pub title: Option<String>,
+	pub done: Option<bool>
+}

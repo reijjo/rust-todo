@@ -31,6 +31,8 @@ export const TodoItem = ({ todo }: TodoItemProps) => {
           name="todo-input"
           id={todo.id}
           className="todo-check"
+          disabled={update.isPending}
+          checked={todo.done}
           onClick={() =>
             update.mutate({
               id: todo.id,
@@ -38,7 +40,19 @@ export const TodoItem = ({ todo }: TodoItemProps) => {
             })
           }
         />
-        <p className="todo-title">{todo.title}</p>
+        <p
+          className="todo-title"
+          style={
+            todo.done
+              ? {
+                  textDecoration: "line-through",
+                  color: "rgba(255, 255, 255, 0.5)",
+                }
+              : undefined
+          }
+        >
+          {update.isPending ? "updating..." : todo.title}
+        </p>
       </label>
       {todo.done && (
         <button
