@@ -128,14 +128,18 @@ pub async fn delete_todo(
 // TESTS
 #[cfg(test)]
 mod tests {
+	use crate::config::Config;
+
 	use super::*;
 	use mongodb::Client;
 
 	#[tokio::test]
 	async fn routes_compile() {
-		let client = Client::with_uri_str("mongodb://localhost:27017").await.unwrap();
+		let conf = Config::from_env();
+
+		let client = Client::with_uri_str(&conf.mongodb_uri).await.expect("Failed to mongo");
     let db = client.database("test");
-    let collection = db.collection("todos");
+    let collection = db.collection::<Todo>("todos");
     let _router = todo_routes(collection);
 	}
 }

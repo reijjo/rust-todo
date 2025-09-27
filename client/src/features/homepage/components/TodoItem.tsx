@@ -33,7 +33,7 @@ export const TodoItem = ({ todo }: TodoItemProps) => {
           className="todo-check"
           disabled={update.isPending}
           checked={todo.done}
-          onClick={() =>
+          onChange={() =>
             update.mutate({
               id: todo.id,
               done: !todo.done,

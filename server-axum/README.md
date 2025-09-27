@@ -500,13 +500,13 @@ cargo test test_name
 
 Test coverage
 
-- first install cargo-tarpaulin `cargo install cargo-tarpaulin`
+- First install cargo-tarpaulin `cargo install cargo-tarpaulin`
 - Run tests with coverage `cargo tarpaulin`
 
 Test coverage 2 (browser based)
 
 ```bash
-cargo install cargo-llv-cov
+cargo install cargo-llvm-cov
 ```
 
 - Run coverage `cargo llvm-cov --html`
