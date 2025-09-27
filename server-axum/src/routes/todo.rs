@@ -1,4 +1,4 @@
-use axum::{extract::{Path, State}, http::StatusCode, routing::{get, post, patch}, Json, Router};
+use axum::{extract::{Path, State}, http::StatusCode, routing::{get, post, patch, delete}, Json, Router};
 use mongodb::{Collection, bson::{doc, oid::ObjectId}, options::{FindOneAndUpdateOptions, ReturnDocument}};
 use futures::TryStreamExt;
 
@@ -10,6 +10,7 @@ pub fn todo_routes(collection: Collection<Todo>) -> Router {
 		.route("/", get(get_todos))
 		.route("/", post(add_todo))
 		.route("/{id}", patch(update_todo))
+		.route("/{id}", delete(delete_todo))
 		.with_state(collection)
 }
 
@@ -80,23 +81,44 @@ pub async fn update_todo(
 		// If nothing to update
     if update_doc.is_empty() {
         return Err((StatusCode::BAD_REQUEST, "No valid fields to update".to_string()));
-    }
-
-    // By default mongo returns old document before update
-		// This tells return the document AFTER update instead
-    let options = FindOneAndUpdateOptions::builder()
-        .return_document(Some(ReturnDocument::After))
-        .build();
+    }  
 		
 		// All the possible errors in the same database call
+		// RETURN_DOCUMENT = By default mongo returns old document before update
+		// This tells return the document AFTER update instead
     let updated_todo = db
         .find_one_and_update(
             doc! { "_id": &object_id },
             doc! { "$set": update_doc },
         )
-				.with_options(options)
+				// .with_options(options)
+				.return_document(ReturnDocument::After)
         .await
         .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, format!("Update failed: {err}")))?
         .ok_or((StatusCode::NOT_FOUND, "Todo not found".to_string()))?;
     Ok(Json(updated_todo))
+}
+
+// DELETE delete todo
+// /todos/id
+pub async fn delete_todo(
+	State(db): State<Collection<Todo>>,
+	Path(id): Path<String>
+) -> Result<StatusCode, (StatusCode, String)> {
+    // Parse ObjectId
+    let object_id = ObjectId::parse_str(&id)
+        .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid ObjectId format".to_string()))?;
+
+    // Try to delete
+    let result = db
+        .delete_one(doc! { "_id": object_id })
+        .await
+        .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, format!("Delete failed: {err}")))?;
+
+    if result.deleted_count == 0 {
+        return Err((StatusCode::NOT_FOUND, "Todo not found".to_string()));
+    }
+
+    // Return success but no body
+    Ok(StatusCode::NO_CONTENT)
 }

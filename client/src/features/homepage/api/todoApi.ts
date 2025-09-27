@@ -54,7 +54,7 @@ export const updateTodo = async ({
   return response.json();
 };
 
-export const deleteTodo = async (id: string): Promise<Todo> => {
+export const deleteTodo = async (id: string): Promise<void> => {
   const response = await fetch(`${API_URL}/todos/${id}`, {
     method: "DELETE",
     headers: {
@@ -66,5 +66,4 @@ export const deleteTodo = async (id: string): Promise<Todo> => {
     console.log("delete todo api error", response);
     throw new Error(response.statusText);
   }
-  return response.json();
 };
