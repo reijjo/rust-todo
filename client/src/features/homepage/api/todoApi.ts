@@ -5,8 +5,6 @@ import { parseTodoResponse } from "../../../utils/helperFunctions/parsers";
 const { API_URL } = config;
 
 export const getTodos = async (): Promise<Todo[]> => {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
   const response = await fetch(`${API_URL}/todos`);
   if (!response.ok) {
     console.log("get todos api error", {
@@ -46,7 +44,7 @@ export const updateTodo = async ({
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(done),
+    body: JSON.stringify({ done }),
   });
 
   if (!response.ok) {
