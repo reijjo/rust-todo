@@ -31,7 +31,12 @@ export const TodoItem = ({ todo }: TodoItemProps) => {
           name="todo-input"
           id={todo.id}
           className="todo-check"
-          onClick={() => update.mutate(todo.id)}
+          onClick={() =>
+            update.mutate({
+              id: todo.id,
+              done: !todo.done,
+            })
+          }
         />
         <p className="todo-title">{todo.title}</p>
       </label>

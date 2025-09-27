@@ -37,12 +37,16 @@ export const addTodo = async (todo: string): Promise<Todo> => {
   return response.json();
 };
 
-export const updateTodo = async (id: string): Promise<Todo> => {
+export const updateTodo = async ({
+  id,
+  done,
+}: Partial<Todo>): Promise<Todo> => {
   const response = await fetch(`${API_URL}/todos/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
+    body: JSON.stringify(done),
   });
 
   if (!response.ok) {
@@ -54,7 +58,7 @@ export const updateTodo = async (id: string): Promise<Todo> => {
 
 export const deleteTodo = async (id: string): Promise<Todo> => {
   const response = await fetch(`${API_URL}/todos/${id}`, {
-    method: "PATCH",
+    method: "DELETE",
     headers: {
       "Content-Type": "application/json",
     },
