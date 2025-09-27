@@ -1,5 +1,5 @@
 use axum::{extract::{Path, State}, http::StatusCode, routing::{get, post, patch, delete}, Json, Router};
-use mongodb::{Collection, bson::{doc, oid::ObjectId}, options::{FindOneAndUpdateOptions, ReturnDocument}};
+use mongodb::{Collection, bson::{doc, oid::ObjectId}, options::{ ReturnDocument}};
 use futures::TryStreamExt;
 
 use crate::models::todo::{ Todo, UpdateTodo };
@@ -121,4 +121,21 @@ pub async fn delete_todo(
 
     // Return success but no body
     Ok(StatusCode::NO_CONTENT)
+}
+
+
+
+// TESTS
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use mongodb::Client;
+
+	#[tokio::test]
+	async fn routes_compile() {
+		let client = Client::with_uri_str("mongodb://localhost:27017").await.unwrap();
+    let db = client.database("test");
+    let collection = db.collection("todos");
+    let _router = todo_routes(collection);
+	}
 }
