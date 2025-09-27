@@ -14,16 +14,16 @@ Install `cargo-watch` -> `cargo install cargo-watch`
 
 - Run server with hot reload `cargo watch -x run` (like nodemon in Expressjs)
 
-## AXUM
+# AXUM
 
-### Add dependencies
+## Add dependencies
 
 Run `cargo add axum` add then you should see the added axum in `Cargo.toml` file.
 
 - Add Tokio too `cargo add tokio --features full`
 - Add `dotenvy` to read variables in `.env` file -> `cargo add dotenvy`
 
-### Example
+## Example
 
 Create `.env` file and add `.env` to `.gitignore`
 
@@ -318,6 +318,10 @@ pub async fn root() -> &'static str {
 
 ```
 
+Checking that everything works
+
+- Go to <http://localhost:3000/todos> and you should see an empty array there
+
 #### Create
 
 Add create todo function in `src/routes/todo.rs`
@@ -458,8 +462,56 @@ pub async fn delete_todo(
 
 ```
 
-### Checking that everything works
+## Testing
 
-Go to <http://localhost:3000/todos> and you should see an empty array there
+Rust (with Axum) supports different levels of testing:
+
+### Unit tests
+
+- Location: Inside the same file as the code (`#[cfg(test)]` modules).
+- Purpose: Test small, isolated pieces of logic.
+- Example: A helper function that parses or validates input.
+
+### Integration tests
+
+- Location: Top-level `tests/` directory.
+- Purpose: Test the public API of the app, usually by spinning up the Axum app and sending requests.
+- Example: Sending `POST /todos` should create a todo and return the correct JSON.
+
+### End-to-End (E2E) tests
+
+- Tool: Playwright (JavaScript).
+- Purpose: Test the full system: frontend + backend + database.
+- Example: Creating a todo from the UI and checking that it appears in the list.
+
+### Running Tests
+
+Run all tests:
+
+```bash
+cargo test
+```
+
+Run specific test:
+
+```bash
+cargo test test_name
+```
+
+Test coverage
+
+- First install cargo-tarpaulin `cargo install cargo-tarpaulin`
+- Run tests with coverage `cargo tarpaulin`
+
+Test coverage 2 (browser based)
+
+```bash
+cargo install cargo-llvm-cov
+```
+
+- Run coverage `cargo llvm-cov --html`
+- Maybe a little bit faster. Open the index.html file in that folder the tests tell you to open
 
 ## ACTIX WEB
+
+- Coming later perhaps
