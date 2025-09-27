@@ -1,5 +1,5 @@
 use axum::{extract::{Path, State}, http::StatusCode, routing::{get, post, patch}, Json, Router};
-use mongodb::{Collection, bson::{doc, oid::ObjectId}};
+use mongodb::{Collection, bson::{doc, oid::ObjectId}, options::{FindOneAndUpdateOptions, ReturnDocument}};
 use futures::TryStreamExt;
 
 use crate::models::todo::{ Todo, UpdateTodo };
@@ -77,31 +77,26 @@ pub async fn update_todo(
         update_doc.insert("title", title);
     }
 
+		// If nothing to update
     if update_doc.is_empty() {
         return Err((StatusCode::BAD_REQUEST, "No valid fields to update".to_string()));
     }
 
-    // Update only the specified fields
-    let update_result = db
-        .update_one(
+    // By default mongo returns old document before update
+		// This tells return the document AFTER update instead
+    let options = FindOneAndUpdateOptions::builder()
+        .return_document(Some(ReturnDocument::After))
+        .build();
+		
+		// All the possible errors in the same database call
+    let updated_todo = db
+        .find_one_and_update(
             doc! { "_id": &object_id },
             doc! { "$set": update_doc },
-         
         )
+				.with_options(options)
         .await
-        .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, format!("Update failed: {err}")))?;
-
-    // Check if a document was actually updated
-    if update_result.matched_count == 0 {
-        return Err((StatusCode::NOT_FOUND, "Todo not found".to_string()));
-    }
-
-    // Fetch the updated document to return
-    let updated_todo = db
-        .find_one(doc! { "_id": &object_id })
-        .await
-        .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, format!("DB error: {err}")))?
-        .ok_or((StatusCode::NOT_FOUND, "Todo disappeared after update".to_string()))?;
-
+        .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, format!("Update failed: {err}")))?
+        .ok_or((StatusCode::NOT_FOUND, "Todo not found".to_string()))?;
     Ok(Json(updated_todo))
 }
